@@ -18,19 +18,19 @@ abstract class AbstractDriver {
 	 * 推广活动记录（对应表 c_ad_feed_activity 中的一条记录）
 	 * @var array
 	 */
-	protected $activity = [];
+	public $activity = [];
 
 	/**
 	 * 点击监测请求地址（完整请求地址）
 	 * @var string
 	 */
-	protected $click_req_url = '';
+	public $click_req_url = '';
 
 	/**
 	 * 点击监测请求参数数组
 	 * @var array
 	 */
-	protected $click_req_params = [];
+	public $click_req_params = [];
 
 	public function __construct($activity) {
 		// GET请求地址

@@ -21,6 +21,7 @@ class FeedAdFactory {
 		$activity = [
 			'adplatform_name' => $activity_info['adplatform_name'],
 			'tkio_click_url'  => $activity_info['tkio_click_url'],
+			'adplatform_key'  => $activity_info['adplatform_key'],
 		];
 		
 		$adplatform_name = $activity['adplatform_name'];

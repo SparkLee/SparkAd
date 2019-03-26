@@ -48,6 +48,7 @@ abstract class AbstractDriver {
 	/**
 	　* 弹出URL中的一个指定参数
 	 * 示例：PopUrlParam("http://www.domain.com/api?a=1&b=2&sign=c403f7d181b6b468579629e82237cb20", 'sign') = 'http://www.domain.com/api?a=1&b=2'
+	 * 注：不能使用parse_str，http_build_query之类的函数，因为这些函数会自动urldecode/urlencode，从而破坏原始请求URL，可能导致验签失败等问题；parse_url不会变更URL的编码
 	 * @return [弹出指定参数后的URL, 被弹出的参数值]
 	 */
 	public function PopUrlParam($url, $param_name) {
@@ -55,13 +56,26 @@ abstract class AbstractDriver {
 
 		// 去掉请求参数中的签名参数sign
 		$query_string = $url_parsed['query'];
-		parse_str($query_string, $query_arr);
-		$param_val = $query_arr[$param_name];
-		unset($query_arr[$param_name]);
-		$query_string = http_build_query($query_arr);
-		$query_string = urldecode($query_string); # http_build_query会自动urlencode，为保持字符串原值，需要再urldecode一次。
 
-		$new_url = "{$url_parsed['scheme']}://{$url_parsed['host']}{$url_parsed['path']}?{$query_string}";
+		// 将query字符串拆成数组进行操作
+		$query_arr = explode('&', $query_string);
+		foreach ($query_arr as $k => $v) {
+			$v = explode('=', $v);
+			if($v[0] == $param_name) {
+				unset($query_arr[$k]);
+				$param_val = $v[1];
+				break;
+			}
+		}
+
+		// 把query数组再组装回字符串
+		$query_string_poped = '';
+		foreach ($query_arr as $query) {
+			$query_string_poped .= $query.'&';
+		}
+		$query_string_poped = trim($query_string_poped, '&');
+
+		$new_url = "{$url_parsed['scheme']}://{$url_parsed['host']}{$url_parsed['path']}?{$query_string_poped}";
 		return [$new_url, $param_val];
 	}
 

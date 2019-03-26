@@ -37,7 +37,7 @@ class BaiduNativeOcpc extends AbstractDriver {
 	public function checkSign() {
 		// 获取去除签名参数sign之后的URL，和签名参数值
 		list($url, $param_sign_val) = $this->PopUrlParam($this->click_req_url, 'sign');
-		
+
 		// 在去掉签名参数sign的完全请求地址末尾直接追加akey
 		$url .= $this->akey;
 

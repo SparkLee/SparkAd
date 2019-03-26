@@ -71,7 +71,7 @@ class BaiduNativeOcpc extends AbstractDriver {
 		$url .= "&uid={{UNIT_ID}}";               # 单元ID
 		$url .= "&callback_url={{CALLBACK_URL}}"; # 效果数据回传URL
 		$url .= "&click_id={{CLICK_ID}}";         # 点击唯一标识
-		$url .= "&ext_info={{EXT_INFO}}";         # 
+		$url .= "&ext_info={{EXT_INFO}}";         ### 热云TrackingIO点击监测链接有此参数，百度原生oCPC文档没有  
 		$url .= "&sign={{SIGN}}";                 # 签名
 
 		return $url;

@@ -50,6 +50,7 @@ class BaiduNativeOcpc extends AbstractDriver {
 
 	/**
 	 * 获取点击监测链接
+	 * 手百用户点击广告，客户端收集用户的点击事件，手百客户端把点击事件发送给百度广告服务器，百度原生回调监测URL，即feedbackurl(由广告主自行开发，或托管给三方监测平台)
 	 * @return 包含占位符的点击监测链接 http://sdk.duojiao.tv/index.php/FeedAd/Api/click/id/1?a_type={{ATYPE}}&a_value={{AVALUE}}&userid={{USER_ID}}&aid={{IDEA_ID}}&pid={{PLAN_ID}}&uid={{UNIT_ID}}&callback_url={{CALLBACK_URL}}&click_id={{CLICK_ID}}&idfa={{IDFA}}&imei_md5={{IMEI_MD5}}&android_id={{ANDROID_ID}}&ip={{IP}}&ua={{UA}}&os={{OS}}&ts={{TS}}&ext_info={{EXT_INFO}}&sign={{SIGN}}
 	 */
 	public function getClickUrl($url_path) {
@@ -78,13 +79,35 @@ class BaiduNativeOcpc extends AbstractDriver {
 	}
 
 	/**
+	 * 获取点击回传地址
+	 * 当广告主或第三方监测平台接受到百度原生的请求后，根据请求参数中用户的信息(例如用户的 idfa,imei 等)，来匹配该用户的转化数据（应用激活、消费等） 广告主或三方监测平台将匹配成功的转化数据与广告点击数据进行拼接，使用callback_url回传给百度。
+	 */
+	public function getClickCallbackUrl() {
+		// 从点击监测请求URL中获取回传地址
+		$callback_url = $this->PopUrlParam($this->click_req_url, 'callback_url', 'param');
+
+		// URL解码
+		$callback_url = urldecode($callback_url);
+
+		// 参数替换（activate：代表回传的是激活【即用户首次打开游戏】数据）
+		$callback_url = str_replace('{{ATYPE}}', 'activate', $callback_url);
+		$callback_url = str_replace('{{AVALUE}}', '0', $callback_url);
+
+		// 拼接签名
+		$sign = md5($callback_url.$this->akey);
+		$callback_url = $callback_url.'&sign='.$sign;
+
+		return $callback_url;
+	}
+
+	/**
 	　* 组装并返回热云TrackingIO点击监测链接
 	 */
 	public function getTkioClickUrl() {
 		$tkio_click_url = $this->activity['tkio_click_url'];
 
 		// 获取去除签名参数sign之后的URL，和签名参数值
-		list($url, $sign_placeholder) = $this->PopUrlParam($tkio_click_url, 'sign');
+		$url = $this->PopUrlParam($tkio_click_url, 'sign', 'url');
 
 		// 替换热云TrackingIO点击监测链接中的占位符
 		$url = str_replace('{{IDFA}}',     $this->click_req_params['idfa'],          $url);

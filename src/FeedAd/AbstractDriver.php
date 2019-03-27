@@ -51,7 +51,7 @@ abstract class AbstractDriver {
 	 * 注：不能使用parse_str，http_build_query之类的函数，因为这些函数会自动urldecode/urlencode，从而破坏原始请求URL，可能导致验签失败等问题；parse_url不会变更URL的编码
 	 * @return [弹出指定参数后的URL, 被弹出的参数值]
 	 */
-	public function PopUrlParam($url, $param_name) {
+	public function PopUrlParam($url, $param_name, $return = '') {
 		$url_parsed = parse_url($url);
 
 		// 去掉请求参数中的签名参数sign
@@ -76,7 +76,18 @@ abstract class AbstractDriver {
 		$query_string_poped = trim($query_string_poped, '&');
 
 		$new_url = "{$url_parsed['scheme']}://{$url_parsed['host']}{$url_parsed['path']}?{$query_string_poped}";
-		return [$new_url, $param_val];
+
+		switch ($return) {
+			case 'url':
+				return $new_url;
+				break;
+			case 'param':
+				return $param_val;
+				break;
+			default:
+				return [$new_url, $param_val];
+				break;
+		}
 	}
 
 	/**

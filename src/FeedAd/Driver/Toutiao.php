@@ -71,7 +71,7 @@ class Toutiao extends AbstractDriver {
 		$tkio_click_url = $this->activity['tkio_click_url'];
 
 		// 获取去除签名参数sign之后的URL，和签名参数值
-		list($url, $sign_placeholder) = $this->PopUrlParam($tkio_click_url, 'sign');
+		$url = $this->PopUrlParam($tkio_click_url, 'sign', $url);
 
 		// 替换热云TrackingIO点击监测链接中的占位符
 		$url = str_replace('__OPENUDID__',       $this->click_req_params['openudid'],       $url);

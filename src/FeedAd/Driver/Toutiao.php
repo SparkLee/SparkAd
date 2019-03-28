@@ -140,6 +140,8 @@ class Toutiao extends AbstractDriver {
 	public function getTkioClickUrl() {
 		$tkio_click_url = $this->activity['tkio_click_url'];
 
+		if(empty($tkio_click_url)) return '';
+
 		// 获取去除签名参数sign之后的URL，和签名参数值
 		$url = $this->PopUrlParam($tkio_click_url, 'sign', 'url');
 

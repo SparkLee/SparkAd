@@ -1,4 +1,11 @@
 <?php
+// +-----------------------------------------------------------------------------------------------------
+// 注：'百度凤巢oCPC'与'百度原生oCPC'的对接方式和对接参数完全一样，故两者可共用一个对接处理类(BaiduNativeOcpc)
+// 
+// 百度凤巢oCPC-APP激活数据回传开发指南：http://ocpc.baidu.com/developer/d/guide?iurl=app%2Fapp-doc%2F
+// 百度凤巢oCPC-APP转化数据接口基本介绍：http://ocpc.baidu.com/developer/d/apidoc/?iurl=app%2F
+// +-----------------------------------------------------------------------------------------------------
+
 namespace SparkLee\Ad\FeedAd\Driver;
 
 use SparkLee\Ad\FeedAd\AbstractDriver;
@@ -119,6 +126,8 @@ class BaiduNativeOcpc extends AbstractDriver {
 	 */
 	public function getTkioClickUrl() {
 		$tkio_click_url = $this->activity['tkio_click_url'];
+
+		if(empty($tkio_click_url)) return '';
 
 		// 获取去除签名参数sign之后的URL，和签名参数值
 		$url = $this->PopUrlParam($tkio_click_url, 'sign', 'url');

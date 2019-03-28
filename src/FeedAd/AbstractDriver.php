@@ -8,6 +8,12 @@ namespace SparkLee\Ad\FeedAd;
  * @since  2019/03/22 18:00
  */
 abstract class AbstractDriver {
+	// 设备操作系统类型
+	const OS_UNKNOWN  = 0; # 未知
+	const OS_ANDROID  = 1; # 安卓
+	const OS_IOS      = 2; # 苹果
+	const OS_WINPHONE = 3; # 微软
+
 	/**
 	 * 信息流广告平台名称
 	 * @var string

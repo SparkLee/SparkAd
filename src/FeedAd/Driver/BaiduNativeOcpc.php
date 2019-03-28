@@ -72,10 +72,24 @@ class BaiduNativeOcpc extends AbstractDriver {
 		$url .= "&uid={{UNIT_ID}}";               # 单元ID
 		$url .= "&callback_url={{CALLBACK_URL}}"; # 效果数据回传URL
 		$url .= "&click_id={{CLICK_ID}}";         # 点击唯一标识
-		$url .= "&ext_info={{EXT_INFO}}";         ### 热云TrackingIO点击监测链接有此参数，百度原生oCPC文档没有  
+		// $url .= "&ext_info={{EXT_INFO}}";         ### 热云TrackingIO点击监测链接有此参数，百度原生oCPC文档没有  
 		$url .= "&sign={{SIGN}}";                 # 签名
 
 		return $url;
+	}
+
+	// 从点击监测请求中获取：
+	// OS 操作系统
+	public function getOS() {
+		$os = [
+			'1' => self::OS_IOS,
+			'2' => self::OS_ANDROID,
+		];
+		if(isset($this->click_req_params['os']) && in_array($this->click_req_params['os'], $os)) {
+			return $os[$this->click_req_params['os']];
+		} else {
+			return self::OS_UNKNOWN;
+		}
 	}
 
 	/**
@@ -110,18 +124,21 @@ class BaiduNativeOcpc extends AbstractDriver {
 		$url = $this->PopUrlParam($tkio_click_url, 'sign', 'url');
 
 		// 替换热云TrackingIO点击监测链接中的占位符
+		# 注：热云针对"百度原生oCPC"渠道生成的点击监测短链中没有携带参数{{CALLBACK_URL}}，但有"百度原生oCPC"对接文档
+		# 中没有的特殊参数{{EXT_INFO}}，据热云的对接人员说，热云和"百度原生oCPC"渠道走了一套独立的对接方案，估计说的
+		# 就是这个特殊情况。 所以，SDK不仅要提供点击监测链接，还需要主动给百度回传（通过callback_url）激活转化数据。
 		$url = str_replace('{{IDFA}}',     $this->click_req_params['idfa'],          $url);
 		$url = str_replace('{{OS}}',       $this->click_req_params['os'],            $url);
 		$url = str_replace('{{IP}}',       $this->click_req_params['ip'],            $url);
 		$url = str_replace('{{TS}}',       $this->click_req_params['ts'],            $url);
 		$url = str_replace('{{IDEA_ID}}',  $this->click_req_params['aid'],           $url);
 		$url = str_replace('{{CLICK_ID}}', $this->click_req_params['click_id'],      $url);
-		$url = str_replace('{{EXT_INFO}}', $this->click_req_params['ext_info'],      $url);
+		// $url = str_replace('{{EXT_INFO}}', $this->click_req_params['ext_info'],      $url); # 百度调用SDK点击监测链接不会替换参数{{EXT_INFO}}
 		$url = str_replace('{{UA}}',       urlencode($this->click_req_params['ua']), $url);
 
 		// 生成签名
 		$sign = md5($url.$this->akey);
-		$url .= "&sign={$sign}";
+		$url .= "&sign={$sign}"; # 上文中$url中的sign参数已被剔除，故此处需要拼接
 
 		return $url;
 	}

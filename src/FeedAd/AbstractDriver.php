@@ -122,9 +122,9 @@ abstract class AbstractDriver {
 	 * 根据广告平台的点击监测请求链接中的参数获取设备唯一标识
 	 */
 	public function getDeviceID() {
-		if(!empty($this->click_req_params['idfa'])) {
+		if(!empty($this->click_req_params['idfa']) && !in_array($this->click_req_params['idfa'], ['null', 'nil', 'NULL'])) {
 			return $this->click_req_params['idfa'];
-		} elseif (!empty($this->click_req_params['imei_md5'])) {
+		} elseif (!empty($this->click_req_params['imei_md5']) && !in_array($this->click_req_params['imei_md5'], ['null', 'nil', 'NULL'])) {
 			return $this->click_req_params['imei_md5'];
 		} else {
 			return trim($this->click_req_params['ip'].'|'.$this->getOSVersionFromUA($this->click_req_params['ua']), '|');

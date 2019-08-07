@@ -15,7 +15,7 @@ class FeedAdFactory {
      *
      * @param array $activity_info 推广活动记录（对应表 c_ad_feed_activity 中的一条记录）
      *
-     * @return $this
+     * @return AbstractDriver
      *
      * @throws \Exception
      * @author Spark Lee <liweijsj@163.com>

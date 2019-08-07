@@ -50,6 +50,12 @@ abstract class AbstractDriver {
 		// 活动记录
 		$this->activity = $activity;
 	}
+	
+	abstract public function checkSign();
+
+	abstract public function getTkioClickUrl();
+
+	abstract public function getClickCallbackUrl();
 
 	/**
 	　* 弹出URL中的一个指定参数
@@ -96,38 +102,90 @@ abstract class AbstractDriver {
 		}
 	}
 
-	/**
-	 * 根据UA获取终端操作系统版本
-	 */
-	private function getOSVersionFromUA($ua = null) {
-		!$ua && $ua = $_SERVER['HTTP_USER_AGENT'];
+    /**
+     * 根据UA获取终端操作系统版本
+     */
+    private function getOSVersionFromUA($ua = null)
+    {
+        !$ua && $ua = $_SERVER['HTTP_USER_AGENT'];
 
-		if(strpos($ua, 'Android') !== false) {
-			if(preg_match('#Android [\d|\.]+#', $ua, $matches)) {
-				return str_replace(' ', '', $matches[0]);
-			}
-		}else if(strpos($ua, 'iPad') !== false) {
-			if(preg_match('#OS ([\d|_]+)#', $ua, $matches)) {
-				return str_replace('_', '.', "iPad{$matches[1]}");
-			}
-		}else if(strpos($ua, 'iPhone') !== false) {
-			if(preg_match('#OS ([\d|_]+)#', $ua, $matches)) {
-				return str_replace('_', '.', "iPhone{$matches[1]}");
-			}
-		}else {
-			return '';
-		}
-	}
-	/**
-	 * 根据广告平台的点击监测请求链接中的参数获取设备唯一标识
-	 */
-	public function getDeviceID() {
-		if(!empty($this->click_req_params['idfa']) && !in_array($this->click_req_params['idfa'], ['null', 'nil', 'NULL'])) {
-			return $this->click_req_params['idfa'];
-		} elseif (!empty($this->click_req_params['imei_md5']) && !in_array($this->click_req_params['imei_md5'], ['null', 'nil', 'NULL'])) {
-			return $this->click_req_params['imei_md5'];
-		} else {
-			return trim($this->click_req_params['ip'].'|'.$this->getOSVersionFromUA($this->click_req_params['ua']), '|');
-		}
-	}
+        if (strpos($ua, 'Android') !== false) {
+            if (preg_match('#Android [\d|\.]+#', $ua, $matches)) {
+                return str_replace(' ', '', $matches[0]);
+            }
+        } else if (strpos($ua, 'iPad') !== false) {
+            if (preg_match('#OS ([\d|_]+)#', $ua, $matches)) {
+                return str_replace('_', '.', "iPad{$matches[1]}");
+            }
+        } else if (strpos($ua, 'iPhone') !== false) {
+            if (preg_match('#OS ([\d|_]+)#', $ua, $matches)) {
+                return str_replace('_', '.', "iPhone{$matches[1]}");
+            }
+        } else {
+            return '';
+        }
+    }
+
+    public function isDeviceNoBasedOnIp()
+    {
+        if ($this->getDeviceNoBasedOnParamIdfa()
+            || $this->getDeviceNoBasedOnParamImeiMd5()) return false;
+
+        return true;
+    }
+
+    /**
+     * 根据广告平台的点击监测请求链接中的参数获取设备唯一标识
+     *
+     * @param bool $base_on_ip 只否强制使用基于IP生成的设备号
+     *
+     * @return string
+     */
+    public function getDeviceID($base_on_ip = false)
+    {
+        if ($base_on_ip) return $this->generateDeviceNoBasedOnIp();
+
+        if ($idfa = $this->getDeviceNoBasedOnParamIdfa()) return $idfa;
+
+        if ($imei_md5 = $this->getDeviceNoBasedOnParamImeiMd5()) return $imei_md5;
+
+        return $this->generateDeviceNoBasedOnIp();
+    }
+
+    /**
+     * 基于请求参数 idfa 生成设备号（即设备唯一标识符）
+     *
+     * @return string|null
+     */
+    private function getDeviceNoBasedOnParamIdfa()
+    {
+        if(!empty($this->click_req_params['idfa']) && !in_array($this->click_req_params['idfa'], ['null', 'nil', 'NULL']))
+            return $this->click_req_params['idfa'];
+
+        return null;
+    }
+
+    /**
+     * 基于请求参数 imei_md5 生成设备号（即设备唯一标识符）
+     *
+     * @return string|null
+     */
+    private function getDeviceNoBasedOnParamImeiMd5()
+    {
+        if (!empty($this->click_req_params['imei_md5']) && !in_array($this->click_req_params['imei_md5'], ['null', 'nil', 'NULL']))
+            return $this->click_req_params['imei_md5'];
+
+        return null;
+    }
+
+    /**
+     * 基于IP生成设备号（即设备唯一标识符）
+     *
+     * @return string
+     */
+    private function generateDeviceNoBasedOnIp()
+    {
+        return trim($this->click_req_params['ip'] . '|' . $this->getOSVersionFromUA($this->click_req_params['ua']), '|');
+    }
+
 }

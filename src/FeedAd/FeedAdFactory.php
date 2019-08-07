@@ -10,14 +10,19 @@ namespace SparkLee\Ad\FeedAd;
 class FeedAdFactory {
 	private static $instance = []; // 广告平台实例类数组
 
-	/**
-	 * 获取单例对象
-	 * @author Spark Lee <liweijsj@163.com>
-	 * @since  2019/03/22 18:00
-	 *
-	 * @param  Array $activity_info 推广活动记录（对应表 c_ad_feed_activity 中的一条记录）
-	 */
-	public static function getInstance($activity_info) {
+    /**
+     * 获取单例对象
+     *
+     * @param array $activity_info 推广活动记录（对应表 c_ad_feed_activity 中的一条记录）
+     *
+     * @return $this
+     *
+     * @throws \Exception
+     * @author Spark Lee <liweijsj@163.com>
+     * @since  2019/03/22 18:00
+     */
+	public static function getInstance($activity_info)
+    {
 		$activity = [
 			'adplatform_name' => $activity_info['adplatform_name'],
 			'tkio_click_url'  => $activity_info['tkio_click_url'],

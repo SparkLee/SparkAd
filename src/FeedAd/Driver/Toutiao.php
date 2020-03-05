@@ -8,8 +8,10 @@ use SparkLee\Ad\FeedAd\AbstractDriver;
  *
  * @author Spark Lee <liweijsj@163.com>
  * @since  2019/03/22 18:00
- * @see 巨量引擎-开发文档-移动应用API上报数据：https://ad.toutiao.com/openapi/doc/index.html?id=252
- * @see 巨量引擎-推广后台：https://ad.toutiao.com/overture/data/advertiser/ad/
+ *
+ * @see 巨量引擎-开发文档-数据上报管理-移动应用API上报数据 https://ad.oceanengine.com/openapi/doc/index.html?id=576
+ * @see 巨量引擎-推广后台 https://ad.toutiao.com/overture/data/advertiser/ad/
+ * @see【游戏行业】关于转化跟踪方式适配安卓Q版更新说明 https://bytedance.feishu.cn/space/doc/doccnO4tew0AROj78SyhlIP53Ve
  */
 class Toutiao extends AbstractDriver {
 	/**
@@ -52,7 +54,10 @@ class Toutiao extends AbstractDriver {
 
 	/**
 	 * 获取点击监测链接
-	 * @return 包含占位符的点击监测链接 http://sdk.duojiao.tv/index.php/FeedAd/Api/click/id/1??ip=__IP__&ua=__UA__&ua1=__UA1__&os=__OS__&ts=__TS__&idfa=__IDFA__&udid=__UDID__&openudid=__OPENUDID__&imei_md5=__IMEI__&android_id=__ANDROIDID__&android_id1=__ANDROIDID1__&uuid=__UUID__&mac=__MAC__&mac1=__MAC1__&cid=__CID__&aid=__AID__&csite=__CSITE__&ctype=__CTYPE__&callback_url=__CALLBACK_URL__&callback_param=__CALLBACK_PARAM__&convert_id=__CONVERT_ID__&siteid=__UNION_SITE__&sign=__SIGN__
+     *
+     * 设备归因字段优先级：IMEI>OAID>Android ID>IP+UA，具体标准说明：建议优先使用IMEI和OAID进行归因，如果没有可使用Android-id、IP+UA字段进行补充。
+     *
+     * @return 包含占位符的点击监测链接 http://sdk.duojiao.tv/index.php/FeedAd/Api/click/id/1?ip=__IP__&ua=__UA__&ua1=__UA1__&os=__OS__&ts=__TS__&idfa=__IDFA__&udid=__UDID__&openudid=__OPENUDID__&imei_md5=__IMEI__&android_id=__ANDROIDID__&android_id1=__ANDROIDID1__&oaid=__OAID__&oaid_md5=__OAID_MD5__&mac=__MAC__&mac1=__MAC1__&cid=__CID__&aid=__AID__&csite=__CSITE__&ctype=__CTYPE__&callback_url=__CALLBACK_URL__&callback_param=__CALLBACK_PARAM__&convert_id=__CONVERT_ID__&siteid=__UNION_SITE__&sign=__SIGN__
 	 */
 	public function getClickUrl($url_path) {
 		$url = $url_path;
@@ -68,22 +73,27 @@ class Toutiao extends AbstractDriver {
 		$url .= "&imei_md5=__IMEI__";                 # Android广告唯一标识（取md5摘要，IMEI为15位数字，双卡手机可能有两个IMEI）
 		$url .= "&android_id=__ANDROIDID__";          # Android硬件设备唯一标识（取md5摘要）
 		$url .= "&android_id1=__ANDROIDID1__";        # Android硬件设备唯一标识（原值）
-		$url .= "&uuid=__UUID__";                     # Android手机系统生成的设备ID（原值）
-		$url .= "&mac=__MAC__";                       # 用户终端的eth0接口的MAC地址（去除分隔符":"，取md5sum摘要，入网硬件地址）
-		$url .= "&mac1=__MAC1__";                     # 用户终端的eth0接口的MAC地址（保留分隔符":"，取md5sum摘要，入网硬件地址）
+        $url .= "&oaid=__OAID__";                     # Android Q 及更高版本的设备号，64位及以下（样例：97e7ef3f-e5f2-d0b8-ccfc-f79bbeaf4841注意，一些例外如果无法获取 oaid，oaid 会传空字符串）
+        $url .= "&oaid_md5=__OAID_MD5__";             # Android Q 及更高版本的设备号的 md5 摘要，64位及以下（样例:87f8274c36eb73fabcbf143a10eca6a4，会存在部分无法获取oaid的情况，则该字段会回传空字符串）
+        $url .= "&mac=__MAC__";                       # 用户终端的eth0接口的MAC地址（去除分隔符":"，取md5sum摘要，入网硬件地址）
+        $url .= "&mac1=__MAC1__";                     # 用户终端的eth0接口的MAC地址（保留分隔符":"，取md5sum摘要，入网硬件地址）
 
-		$url .= "&cid=__CID__";                       # 广告创意ID
-		$url .= "&aid=__AID__";                       # 广告计划ID
-		$url .= "&aid_name=__AID_NAME__";             # 广告计划名称（urlencode编码）
-		$url .= "&csite=__CSITE__";                   # 广告投放位置（1:头条信息流，3:详情页，11:段子信息流，10001:西瓜视频，30001:火山小视频，40001:抖音）
-		$url .= "&ctype=__CTYPE__";                   # 创意样式（2:小图模式，3:大图模式，4:组图模式，5:视频）
-		$url .= "&callback_url=__CALLBACK_URL__";     # 激活回调地址（方案一，urlencode编码）
-		$url .= "&callback_param=__CALLBACK_PARAM__"; # 激活回调地址（方案二，urlencode编码）
-		$url .= "&convert_id=__CONVERT_ID__";         # 转化跟踪ID
-		$url .= "&siteid=__UNION_SITE__";             ### 热云TrackingIO点击监测链接有此参数，今日头条文档没有 
-		$url .= "&sign=__SIGN__";                     # 签名（使用替换后的 url+convert_secret_key进行 md5 生成签名，注意！！！该字段一定放到 url 的最后，作为最后一个参数，备注：签名是为了接口反作弊使用，一般不推荐使用）
+        $url .= "&cid=__CID__";                       # 广告创意ID
+        $url .= "&aid=__AID__";                       # 广告计划ID
+        $url .= "&aid_name=__AID_NAME__";             # 广告计划名称（urlencode编码）
+        $url .= "&csite=__CSITE__";                   # 广告投放位置（1:头条信息流，3:详情页，11:段子信息流，10001:西瓜视频，30001:火山小视频，40001:抖音）
+        $url .= "&ctype=__CTYPE__";                   # 创意样式（2:小图模式，3:大图模式，4:组图模式，5:视频）
+        $url .= "&callback_url=__CALLBACK_URL__";     # 激活回调地址（方案一，urlencode编码）
+        $url .= "&callback_param=__CALLBACK_PARAM__"; # 激活回调地址（方案二，urlencode编码）
+        $url .= "&convert_id=__CONVERT_ID__";         # 转化跟踪ID
+        $url .= "&siteid=__UNION_SITE__";             ### 热云TrackingIO点击监测链接有此参数，今日头条文档没有
+        $url .= "&sign=__SIGN__";                     # 签名（使用替换后的 url+convert_secret_key进行 md5 生成签名，注意！！！该字段一定放到 url 的最后，作为最后一个参数，备注：签名是为了接口反作弊使用，一般不推荐使用）
 
-		return $url;
+        // 今日头条-》广告投放平台-》通知：【重要通知】应用下载-UUID宏参数将于2019年12月23日优化升级（通知发布时间为 2019-12-12 18:53）
+        // 用户终端的UUID（用户终端的15位数字IMEI）2019年12月23日将不再进行替换，可使用[IMEI，OAID]两个字段进行归因
+        // $url .= "&uuid=__UUID__";                  # Android手机系统生成的设备ID（原值）
+
+        return $url;
 	}
 
 	// 从点击监测请求中获取：
@@ -115,7 +125,7 @@ class Toutiao extends AbstractDriver {
 
 	/**
 	 * 获取点击回传地址
-	 * @see 回调地址：https://ad.toutiao.com/openapi/doc/index.html?id=287
+	 * @see 回调地址 https://ad.toutiao.com/openapi/doc/index.html?id=287
 	 */
 	public function getClickCallbackUrl() {
 		// 从点击监测请求URL中获取回传地址
